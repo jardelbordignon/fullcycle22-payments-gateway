@@ -1,4 +1,4 @@
-name: full_cycle_esquenta
+name: full_cycle_esquenta_go
 
 services:
   app:

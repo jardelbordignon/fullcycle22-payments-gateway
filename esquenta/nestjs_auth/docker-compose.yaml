@@ -1,0 +1,17 @@
+name: full_cycle_esquenta_nestjs
+
+services:
+  postgres:
+    container_name: postgres_nest
+    image: bitnami/postgresql:latest
+    environment:
+      POSTGRES_USER: docker 
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: nestjs_auth
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_full_cycle_data:/var/lib/postgresql/data
+ 
+volumes:
+  postgres_full_cycle_data:
