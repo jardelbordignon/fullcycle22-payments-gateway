@@ -1,0 +1,30 @@
+name: full_cycle_esquenta
+
+services:
+  app:
+    container_name: app_go
+    build: . # Build the Docker image
+      #context: . # The context is the directory containing the Dockerfile
+      #dockerfile: Dockerfile # The Dockerfile to use
+    ports:
+      - "8080:8080" # Map port 8080 on the host to port 8080 on the container
+    volumes:
+      - .:/app_go # Mount the current directory to the /app directory in the container
+    depends_on:
+      - postgres # Ensure Postgres is started before the app
+
+  postgres:
+    container_name: postgres_go
+    image: bitnami/postgresql:latest # Use the latest stable version of Postgres from bitnami
+    environment:
+      POSTGRES_USER: docker # Set the username for the postgres user
+      POSTGRES_PASSWORD: docker # Set the password for the postgres user
+      POSTGRES_DB: imersao # Set the database name
+    ports:
+      - "5432:5432" # Map port 5432 on the host to port 5432 on the container
+    volumes:
+      - postgres_full_cycle_data:/var/lib/postgresql/data # Mount the postgres data directory to the container
+      - ./sql/create_db_structure.sql:/docker-entrypoint-initdb.d/sql/create_db_structure.sql
+
+volumes:
+  postgres_full_cycle_data:

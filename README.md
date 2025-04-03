@@ -1,0 +1,1 @@
+[Docker: Do zero a IA](https://www.youtube.com/live/B1pREozQDgw)
