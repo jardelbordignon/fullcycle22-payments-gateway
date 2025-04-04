@@ -48,3 +48,39 @@ DELETE {{apiUrl}}/users/{{createUser.response.body.id}}
 Authorization: {{auth}}
 ###
 
+# @name createPost
+POST {{apiUrl}}/posts
+Content-Type: application/json
+Authorization: {{auth}}
+
+{
+  "title": "My First Post",
+  "content": "This is my first post",
+  "published": true
+}
+###
+
+# @name getPosts
+GET {{apiUrl}}/posts
+Authorization: {{auth}}
+###
+
+# @name getPost
+GET {{apiUrl}}/posts/{{createPost.response.body.id}}
+Authorization: {{auth}}
+###
+
+# @name updatePost
+PATCH {{apiUrl}}/posts/{{createPost.response.body.id}}
+Content-Type: application/json
+Authorization: {{auth}}
+
+{
+  "title": "My First Post Updated"
+}
+###
+
+# @name deletePost
+DELETE {{apiUrl}}/posts/{{createPost.response.body.id}}
+Authorization: {{auth}}
+###
