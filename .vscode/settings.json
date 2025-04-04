@@ -11,7 +11,9 @@
   "material-icon-theme.activeIconPack": "nest",
   "rest-client.environmentVariables": {
     "development": {
-      "apiUrl": "http://localhost:4000"
+      "apiUrl": "http://localhost:4000",
+      "email": "admin@email.com",
+      "password": "123qwe"
     }
   }
 }
