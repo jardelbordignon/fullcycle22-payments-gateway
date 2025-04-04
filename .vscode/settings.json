@@ -8,5 +8,10 @@
     "source.fixAll.eslint": "explicit"
   },
   "files.autoSave": "onFocusChange",
-  "material-icon-theme.activeIconPack": "nest"
+  "material-icon-theme.activeIconPack": "nest",
+  "rest-client.environmentVariables": {
+    "development": {
+      "apiUrl": "http://localhost:4000"
+    }
+  }
 }

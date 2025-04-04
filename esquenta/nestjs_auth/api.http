@@ -1,0 +1,30 @@
+# @name createUser
+POST {{apiUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "ADMIN User",
+  "email": "admin.user@email.com",
+  "password": "123qwe",
+  "role": "ADMIN"
+}
+###
+
+GET {{apiUrl}}/users
+###
+
+GET {{apiUrl}}/users/{{createUser.response.body.id}}
+###
+
+GET {{apiUrl}}/users/{{createUser.response.body.id}}
+###
+
+PATCH {{apiUrl}}/users/{{createUser.response.body.id}}
+Content-Type: application/json
+
+{
+  "name": "ADMIN UPDATED"
+}
+###
+
+DELETE {{apiUrl}}/users/{{createUser.response.body.id}}
