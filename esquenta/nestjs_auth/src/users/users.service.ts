@@ -41,11 +41,16 @@ export class UsersService {
     )
   }
 
-  async findOne(id: string) {
+  private async getUser(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } })
     if (!user) {
       throw new NotFoundException('User not found')
     }
+    return user
+  }
+
+  async findOne(id: string) {
+    const user = await this.getUser(id)
 
     const { password, ...userWithoutPassword } = user
 
@@ -53,10 +58,7 @@ export class UsersService {
   }
 
   async update(id: string, dto: UpdateUserDto) {
-    const user = await this.prisma.user.findUnique({ where: { id } })
-    if (!user) {
-      throw new NotFoundException('User not found')
-    }
+    const user = await this.getUser(id)
 
     const data: Prisma.UserUpdateInput = dto
     if (dto.password) {
@@ -71,7 +73,7 @@ export class UsersService {
   }
 
   async remove(id: string) {
-    await this.prisma.user.delete({ where: { id } })
-    return { message: 'User deleted successfully' }
+    await this.getUser(id)
+    return this.prisma.user.delete({ where: { id } })
   }
 }

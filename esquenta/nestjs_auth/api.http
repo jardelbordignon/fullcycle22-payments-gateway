@@ -1,35 +1,6 @@
-# @name createUser
-POST {{apiUrl}}/users
-Content-Type: application/json
+@auth = Bearer {{login.response.body.access_token}}
 
-{
-  "name": "ADMIN User",
-  "email": "{{email}}",
-  "password": "{{password}}",
-  "role": "ADMIN"
-}
-###
-
-GET {{apiUrl}}/users
-###
-
-GET {{apiUrl}}/users/{{createUser.response.body.id}}
-###
-
-GET {{apiUrl}}/users/{{createUser.response.body.id}}
-###
-
-PATCH {{apiUrl}}/users/{{createUser.response.body.id}}
-Content-Type: application/json
-
-{
-  "name": "ADMIN UPDATED"
-}
-###
-
-DELETE {{apiUrl}}/users/{{createUser.response.body.id}}
-###
-
+# @name login
 POST {{apiUrl}}/auth/login
 Content-Type: application/json
 
@@ -39,5 +10,41 @@ Content-Type: application/json
 }
 ###
 
-# GET {{apiUrl}}/auth/me
-# Authorization: Bearer {{login.response.body.access_token}}
+# @name profile
+GET {{apiUrl}}/users/me
+Authorization: {{auth}}
+###
+
+# @name createUser
+POST {{apiUrl}}/users
+Content-Type: application/json
+Authorization: {{auth}}
+
+{
+  "name": "John Doe",
+  "email": "john.doe@email.com",
+  "password": "{{password}}"
+}
+###
+
+GET {{apiUrl}}/users
+Authorization: {{auth}}
+###
+
+GET {{apiUrl}}/users/{{createUser.response.body.id}}
+Authorization: {{auth}}
+###
+
+PATCH {{apiUrl}}/users/{{createUser.response.body.id}}
+Content-Type: application/json
+Authorization: {{auth}}
+
+{
+  "role": "ADMIN"
+}
+###
+
+DELETE {{apiUrl}}/users/{{createUser.response.body.id}}
+Authorization: {{auth}}
+###
+
