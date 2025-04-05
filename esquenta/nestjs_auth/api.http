@@ -5,7 +5,11 @@ POST {{apiUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "{{email}}",
+  //"email": "{{email}}",
+  //"email": "admin@email.com",
+  //"email": "editor@email.com",
+  "email": "reader@email.com",
+  //"email": "writer@email.com",
   "password": "{{password}}"
 }
 ###

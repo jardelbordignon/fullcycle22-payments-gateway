@@ -6,14 +6,15 @@ import {
   Patch,
   Param,
   Delete,
-  Req,
   HttpCode,
 } from '@nestjs/common'
+import { Roles } from '@prisma/client'
 import { UsersService } from './users.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import type { Request } from 'express'
+import { CurrentUser, RequiredRoles } from 'src/auth/auth.decorator'
 
+@RequiredRoles(Roles.ADMIN)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -29,8 +30,8 @@ export class UsersController {
   }
 
   @Get('me')
-  profile(@Req() req: Request) {
-    return this.usersService.findOne(req.user!.id)
+  profile(@CurrentUser('sub') userId: string) {
+    return this.usersService.findOne(userId)
   }
 
   @Get(':id')

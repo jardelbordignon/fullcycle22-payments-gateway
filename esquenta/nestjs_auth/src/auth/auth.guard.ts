@@ -1,15 +1,17 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
-  SetMetadata,
   UnauthorizedException,
 } from '@nestjs/common'
-import type { Request } from 'express'
 import { JwtService } from '@nestjs/jwt'
 import { Reflector } from '@nestjs/core'
-import type { JwtPayload } from './auth.dto'
+import { Roles } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { IS_PUBLIC_KEY, ROLES_KEY } from './auth.decorator'
+import type { Request } from 'express'
+import type { JwtPayload } from './auth.dto'
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -20,10 +22,12 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>('public', [
-      context.getHandler(),
-      context.getClass(),
-    ])
+    const targets = [context.getHandler(), context.getClass()]
+
+    const isPublic = this.reflector.getAllAndOverride<boolean>(
+      IS_PUBLIC_KEY,
+      targets,
+    )
 
     if (isPublic) return true
 
@@ -49,12 +53,32 @@ export class AuthGuard implements CanActivate {
 
       request.user = user
 
+      const requiredRoles = this.reflector.getAllAndOverride<Roles[]>(
+        ROLES_KEY,
+        targets,
+      )
+
+      if (requiredRoles) {
+        const hasRole =
+          user.role === Roles.ADMIN || requiredRoles.includes(user.role)
+        if (!hasRole) throw new ForbiddenException('Insufficient permissions')
+      }
+
       return true
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'jwt expired') {
+          throw new UnauthorizedException('Access token expired')
+        }
+        if (error.message === 'jwt malformed') {
+          throw new UnauthorizedException('Invalid access token')
+        }
+        if (error.message === 'Insufficient permissions') {
+          throw new ForbiddenException('Insufficient permissions')
+        }
+      }
       console.error(error)
       throw new UnauthorizedException('Invalid access token', { cause: error })
     }
   }
 }
-
-export const Public = () => SetMetadata('public', true)
