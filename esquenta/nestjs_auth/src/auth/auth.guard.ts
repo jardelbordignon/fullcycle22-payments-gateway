@@ -10,6 +10,7 @@ import { Reflector } from '@nestjs/core'
 import { Roles } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { IS_PUBLIC_KEY, ROLES_KEY } from './auth.decorator'
+import { CaslAbilityService } from 'src/casl/casl-ability/casl-ability.service'
 import type { Request } from 'express'
 import type { JwtPayload } from './auth.dto'
 
@@ -19,10 +20,14 @@ export class AuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
     private readonly prismaService: PrismaService,
+    private readonly caslAbilityService: CaslAbilityService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const targets = [context.getHandler(), context.getClass()]
+    const targets = [
+      context.getHandler(), // methods
+      context.getClass(), // classes
+    ]
 
     const isPublic = this.reflector.getAllAndOverride<boolean>(
       IS_PUBLIC_KEY,
@@ -30,6 +35,8 @@ export class AuthGuard implements CanActivate {
     )
 
     if (isPublic) return true
+
+    // caso o endpoint não seja público, o access token é verificado e o user autenticado é buscado no banco de dados.
 
     const request: Request = context.switchToHttp().getRequest()
     const token = request.headers.authorization?.split(' ')[1]
@@ -51,7 +58,7 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException('Invalid access token')
       }
 
-      request.user = user
+      // verifica se o endpoint exige alguma role específica e se o user autenticado possui uma dessas roles.
 
       const requiredRoles = this.reflector.getAllAndOverride<Roles[]>(
         ROLES_KEY,
@@ -64,6 +71,13 @@ export class AuthGuard implements CanActivate {
         if (!hasRole) throw new ForbiddenException('Insufficient permissions')
       }
 
+      // até aqui está garantido que o user está autenticado e tem permissão para acessar o endpoint,
+      // a partir daqui, a autorização é feita pela casl, criando um ability para o user autenticado,
+      // com isso serão verificadas as permissões específicas a ele nas services através de (can ou cannot ...)
+
+      request.user = user
+      this.caslAbilityService.createForUser(user)
+
       return true
     } catch (error) {
       if (error instanceof Error) {
@@ -74,7 +88,7 @@ export class AuthGuard implements CanActivate {
           throw new UnauthorizedException('Invalid access token')
         }
         if (error.message === 'Insufficient permissions') {
-          throw new ForbiddenException('Insufficient permissions')
+          throw new ForbiddenException(error.message)
         }
       }
       console.error(error)

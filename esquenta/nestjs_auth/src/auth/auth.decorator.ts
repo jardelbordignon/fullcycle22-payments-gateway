@@ -23,11 +23,14 @@ export const RequiredRoles = (...roles: Roles[]) =>
 
 /**
  * @description Param Decorator to get the current authenticated user
- * @param data - The user data to return, if not provided, the whole user object is returned
+ * @param prop - The user property to return, if not provided, the whole user object is returned
+ * @example
+ *   getUsers(@CurrentUser() user: JwtPayload) {}
+ *   getUsers(@CurrentUser('sub') userId: string) {}
  */
 export const CurrentUser = createParamDecorator(
-  (data: keyof JwtPayload, ctx: ExecutionContext) => {
+  (prop: keyof JwtPayload, ctx: ExecutionContext) => {
     const { user } = ctx.switchToHttp().getRequest<{ user: JwtPayload }>()
-    return data ? user?.[data] : user
+    return prop ? user?.[prop] : user
   },
 )
