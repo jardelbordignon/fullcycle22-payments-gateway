@@ -22,15 +22,15 @@ const rolePermissions: Record<Roles, DefinePermissions> = {
   EDITOR(user, { can }) {
     can('create', 'Post')
     can('read', 'Post')
-    can('update', 'Post')
+    can('update', 'Post', ['content', 'published'])
   },
   WRITER(user, { can }) {
     can('create', 'Post')
-    can('read', 'Post')
-    can('update', 'Post')
+    can('read', 'Post', { authorId: user.id })
+    can('update', 'Post', { authorId: user.id })
   },
   READER(user, { can }) {
-    can('read', 'Post')
+    can('read', 'Post', { published: true })
   },
 }
 
