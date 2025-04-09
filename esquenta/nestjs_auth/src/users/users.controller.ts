@@ -8,13 +8,11 @@ import {
   Delete,
   HttpCode,
 } from '@nestjs/common'
-import { Roles } from '@prisma/client'
 import { UsersService } from './users.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { CurrentUser, RequiredRoles } from 'src/auth/auth.decorator'
+import { CurrentUser } from 'src/auth/auth.decorator'
 
-@RequiredRoles(Roles.ADMIN)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

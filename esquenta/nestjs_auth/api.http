@@ -6,10 +6,10 @@ Content-Type: application/json
 
 {
   //"email": "{{email}}",
-  //"email": "admin@email.com",
+  "email": "admin@email.com",
   //"email": "editor@email.com",
-  "email": "reader@email.com",
   //"email": "writer@email.com",
+  //"email": "reader@email.com",
   "password": "{{password}}"
 }
 ###

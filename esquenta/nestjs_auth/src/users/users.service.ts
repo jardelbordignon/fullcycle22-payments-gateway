@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -9,12 +10,22 @@ import { hashSync } from 'bcryptjs'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
+import { CaslAbilityService } from 'src/casl/casl-ability/casl-ability.service'
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly caslAbilityService: CaslAbilityService,
+  ) {}
 
   async create(dto: CreateUserDto) {
+    const { ability } = this.caslAbilityService
+
+    if (ability.cannot('create', 'User')) {
+      throw new ForbiddenException('You are not allowed to create a user')
+    }
+
     const userFromEmail = await this.prisma.user.findUnique({
       where: { email: dto.email },
     })
