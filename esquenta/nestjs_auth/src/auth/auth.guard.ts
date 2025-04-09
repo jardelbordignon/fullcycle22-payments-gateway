@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
   ForbiddenException,
@@ -23,7 +24,7 @@ export class AuthGuard implements CanActivate {
     private readonly caslAbilityService: CaslAbilityService,
   ) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const targets = [
       context.getHandler(), // methods
       context.getClass(), // classes
@@ -46,17 +47,17 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload = this.jwtService.verify<JwtPayload>(token, {
+      const jwtPayload = this.jwtService.verify<JwtPayload>(token, {
         algorithms: ['HS256'],
       })
 
-      const user = await this.prismaService.user.findUnique({
-        where: { id: payload.sub },
-      })
+      // const user = await this.prismaService.user.findUnique({
+      //   where: { id: payload.sub },
+      // })
 
-      if (!user) {
-        throw new UnauthorizedException('Invalid access token')
-      }
+      // if (!user) {
+      //   throw new UnauthorizedException('Invalid access token')
+      // }
 
       // verifica se o endpoint exige alguma role específica e se o user autenticado possui uma dessas roles.
 
@@ -65,34 +66,33 @@ export class AuthGuard implements CanActivate {
         targets,
       )
 
+      const { role, permissions } = jwtPayload
+
       if (requiredRoles) {
-        const hasRole =
-          user.role === Roles.ADMIN || requiredRoles.includes(user.role)
-        if (!hasRole) throw new ForbiddenException('Insufficient permissions')
+        const hasRole = role === Roles.ADMIN || requiredRoles.includes(role)
+        if (!hasRole) throw new ForbiddenException('Insufficient role')
       }
 
       // até aqui está garantido que o user está autenticado e tem permissão para acessar o endpoint,
       // a partir daqui, a autorização é feita pela casl, criando um ability para o user autenticado,
       // com isso serão verificadas as permissões específicas a ele nas services através de (can ou cannot ...)
 
-      request.user = user
-      this.caslAbilityService.createForUser(user)
+      this.caslAbilityService.createForRules(permissions)
+      //request.user = user
+      request.jwtPayload = jwtPayload
 
       return true
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message === 'jwt expired') {
-          throw new UnauthorizedException('Access token expired')
+        if (error instanceof UnauthorizedException) {
+          throw new UnauthorizedException(error.message)
         }
-        if (error.message === 'jwt malformed') {
-          throw new UnauthorizedException('Invalid access token')
-        }
-        if (error.message === 'Insufficient permissions') {
+        if (error instanceof ForbiddenException) {
           throw new ForbiddenException(error.message)
         }
       }
       console.error(error)
-      throw new UnauthorizedException('Invalid access token', { cause: error })
+      throw new BadRequestException('Error on auth guard', { cause: error })
     }
   }
 }

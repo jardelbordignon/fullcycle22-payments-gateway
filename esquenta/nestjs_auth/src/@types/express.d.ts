@@ -1,10 +1,10 @@
 import 'express'
-import type { User } from '@prisma/client'
+import type { JwtPayload } from 'src/auth/auth.dto'
 
 declare global {
   namespace Express {
     export interface Request {
-      user?: User
+      jwtPayload?: JwtPayload
     }
   }
 }

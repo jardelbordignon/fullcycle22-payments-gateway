@@ -25,7 +25,7 @@ export class PostsController {
   create(@Body() dto: CreatePostDto, @Req() req: Request) {
     return this.postsService.create({
       ...dto,
-      authorId: req.user!.id,
+      authorId: req.jwtPayload!.sub,
     })
   }
 

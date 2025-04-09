@@ -1,7 +1,17 @@
-import { AbilityBuilder, PureAbility } from '@casl/ability'
+import {
+  AbilityBuilder,
+  ClaimRawRule,
+  PureAbility,
+  SubjectRawRule,
+} from '@casl/ability'
+import { PackRule, unpackRules } from '@casl/ability/extra'
 import { createPrismaAbility, PrismaQuery, Subjects } from '@casl/prisma'
 import { Injectable, Scope } from '@nestjs/common'
 import { Post, Roles, User } from '@prisma/client'
+
+export type Rules = PackRule<
+  ClaimRawRule<any> | SubjectRawRule<any, any, any>
+>[]
 
 // A permissão manage é um especial na lib casl, ela não tem restrições
 export type PermActions = 'manage' | 'create' | 'read' | 'update' | 'delete'
@@ -43,6 +53,17 @@ export class CaslAbilityService {
   createForUser(user: User) {
     const builder = new AbilityBuilder<AppAbility>(createPrismaAbility)
     rolePermissions[user.role](user, builder)
+    this.ability = builder.build()
+    return this.ability
+  }
+
+  createForRules(rules: Rules) {
+    const builder = new AbilityBuilder<AppAbility>(createPrismaAbility)
+
+    unpackRules(rules).forEach(rule => {
+      builder.rules.push(rule as any)
+    })
+
     this.ability = builder.build()
     return this.ability
   }
