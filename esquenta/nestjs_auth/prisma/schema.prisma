@@ -21,14 +21,16 @@ enum Roles {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Roles    @default(READER)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  posts     Post[]
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  password    String
+  role        Roles    @default(READER)
+  /// [PermissionsList]
+  permissions Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  posts       Post[]
 
   @@map("users")
 }

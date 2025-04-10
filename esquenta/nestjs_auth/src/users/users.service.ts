@@ -11,6 +11,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { CaslAbilityService } from 'src/casl/casl-ability/casl-ability.service'
+import { accessibleBy } from '@casl/prisma'
 
 @Injectable()
 export class UsersService {
@@ -46,7 +47,18 @@ export class UsersService {
   }
 
   async findAll() {
-    const users = await this.prisma.user.findMany()
+    const { ability } = this.caslAbilityService
+
+    if (ability.cannot('read', 'User')) {
+      throw new ForbiddenException('You are not allowed to read users')
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        AND: [accessibleBy(ability, 'read').User],
+      },
+    })
+
     return users.map(
       ({ password, ...userWithoutPassword }) => userWithoutPassword,
     )

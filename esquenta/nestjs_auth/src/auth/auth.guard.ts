@@ -84,10 +84,13 @@ export class AuthGuard implements CanActivate {
       return true
     } catch (error) {
       if (error instanceof Error) {
-        if (error instanceof UnauthorizedException) {
-          throw new UnauthorizedException(error.message)
+        if (error.message === 'jwt expired') {
+          throw new UnauthorizedException('Access token expired')
         }
-        if (error instanceof ForbiddenException) {
+        if (
+          error.message === 'malformed token' ||
+          error.message === 'Required access token'
+        ) {
           throw new ForbiddenException(error.message)
         }
       }
